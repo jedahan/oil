@@ -218,13 +218,15 @@ module osh
 
   -- Glob representation, for converting ${x//} to extended regexes.
 
-  -- Example: *.[ch] is Star, Literal(token('.')),
-  --                    CharClassExpr(False, token('ch'))
+  -- Example: *.[ch] is:
+  --   GlobOp(<Glob_Star '*'>),
+  --   Literal([<Glob_Literals '.'>]),
+  --   CharClassExpr(False, [<Glob_LBracket '['>, <Glob_Literals 'ch'>, 
+  --                         <Glob_RBracket ']'>])
 
   glob_part =
     Literal(token* tokens)
-  | Star    -- * is 0 or more characters, like the regex .*
-  | QMark   -- ? is a single character
+  | GlobOp(token token)  -- * or ?
   | CharClassExpr(bool negated, token* tokens)
 
   glob = (glob_part* parts)

@@ -370,8 +370,9 @@ def AddKinds(spec):
   # For parsing globs and converting them to regexes.
   spec.AddKind('Glob', [
       'LBracket', 'RBracket',
-      'LiteralChar', 'Literals',
+      'Star', 'QMark', 'Bang', 'Caret',
       'EscapedChar', 'BadBackslash',
+      'Literals',
   ])
 
 

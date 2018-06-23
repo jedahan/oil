@@ -522,13 +522,11 @@ LEXER_DEF[lex_mode_e.ARITH] = \
 GLOB_DEF = [
   # These could be operators in the glob, or just literals in a char class, e.g.
   # touch '?'; echo [?].
-  C('*', Id.Glob_LiteralChar),
-  C('?', Id.Glob_LiteralChar),
-  # For negation.  (It would be possible to have a GlobLit kind and then
-  # GlobLit_Bang, GlobLit_Caret, etc.  But just testing a single char is
-  # enough.)
-  C('!', Id.Glob_LiteralChar),
-  C('^', Id.Glob_LiteralChar),
+  C('*', Id.Glob_Star),
+  C('?', Id.Glob_QMark),
+  # For negation.
+  C('!', Id.Glob_Bang),
+  C('^', Id.Glob_Caret),
 
   C('[', Id.Glob_LBracket),
   C(']', Id.Glob_RBracket),
