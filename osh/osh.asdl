@@ -227,7 +227,7 @@ module osh
   glob_part =
     GlobLit(token* tokens)
   | GlobOp(token token)  -- * or ?
-  | CharClassExpr(bool negated, token* tokens)
+  | CharClass(bool negated, token* tokens)
 
   glob = (glob_part* parts)
 

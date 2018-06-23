@@ -81,6 +81,7 @@ class _GlobParser(object):
   def __init__(self, lexer):
     self.lexer = lexer
     self.cur_token = None
+    self.warnings = []
 
   def _Next(self):
     """Move to the next token."""
@@ -93,7 +94,31 @@ class _GlobParser(object):
     self.token_val = s
 
   def _ParseCharClass(self):
-    pass
+    """
+    Returns:
+      a CharClass if the parse suceeds, or a GlobLit if fails.  In the latter
+      case, we also append a warning.
+    """
+    balance = 1  # We already saw a [
+    parts = []
+
+    while True:
+      self._Next()
+
+      if self.token_type == Id.Glob_Eof:
+        return ast.GlobLit(parts)
+
+      if self.token_type == Id.Glob_LBracket:
+        balance += 1
+      elif self.token_type == Id.Glob_RBracket:
+        balance -= 1
+
+      if balance == 0:
+        break
+      parts.append(self.token_val)  # Don't append the last ]
+
+    # TODO: Check the first part for Glob_{Bang,Caret}
+    return ast.CharClass(True, parts)
 
   def Parse(self):
     """
@@ -101,7 +126,6 @@ class _GlobParser(object):
     regex, warnings
     """
     parts = []
-    warnings = []
 
     while True:
       self._Next()
@@ -130,7 +154,7 @@ class _GlobParser(object):
         part = ast.GlobLit(s)
       parts.append(part)
 
-    return parts, warnings
+    return parts, self.warnings
 
 
 def _GenerateERE(partsj):
@@ -141,6 +165,13 @@ def GlobToERE(pat):
   lexer = match.GLOB_LEXER.Tokens(pat)
   p = _GlobParser(lexer)
   parts, warnings = p.Parse()
+
+  from asdl import format as fmt
+  import sys
+  #fmt.PrintTree(parts, fmt.DetectConsoleOutput(sys.stdout))
+  #for p in parts:
+  #  fmt.PrintTree(p, fmt.DetectConsoleOutput(sys.stdout))
+
   regex = _GenerateERE(parts)
   return regex, warnings
 
