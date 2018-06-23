@@ -17,6 +17,11 @@
 
 module glob {
 
+  glob_token =
+    Char(string s) 
+  | EscapedChar(string s)  -- \*
+  | Eof
+
   glob = (glob_part* parts)
 
   -- Example: *.[ch] is Star, Literal('.'), CharClassExpr(False, 'ch')

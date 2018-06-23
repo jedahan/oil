@@ -10,9 +10,10 @@ except ImportError:
 
 from osh.meta import glob as glob_ast
 from core import util
-log = util.log
 
+log = util.log
 glob_part_e = glob_ast.glob_part_e
+glob_token_e = glob_ast.glob_token_e
 
 
 def LooksLikeGlob(s):
@@ -72,6 +73,67 @@ def GlobEscape(s):
 # to the standard, anyway.
 # - Honestly I would like a more principled parser for globs!  Can re2c do
 # better here?
+
+class _GlobLexer(object):
+  def __init__(self, s):
+    self.s = s
+    self.n = len(s)
+    self.i = 0
+
+  def Read(self):
+    """Read the next token.
+
+    Char | EscapedChar | Eof
+    """
+    if self.i == self.n:
+      return glob_ast.Eof()
+
+    c = self.s[self.i]
+    if c == '\\':
+      self.i += 1
+      if self.i == self.n:
+        # A backslash at the end of the string is considered a literal.
+        # NOTE: Could warn about bad syntax in this case.
+        return glob_ast.Char(c)
+      c2 = self.s[self.i]
+      self.i += 1
+      return glob_ast.EscapedChar(c2)
+
+    self.i += 1
+    return glob_ast.Char(c)
+
+
+class _GlobParser(object):
+  def __init__(self, lexer):
+    self.lexer = lexer
+    self.cur_token = None
+
+  def _Next(self):
+    self.cur_token = self.lexer.Read()
+
+  def _ParseCharClass(self):
+    pass
+
+  def Parse(self):
+    """
+    Returns:
+    is_glob
+    """
+    pass
+
+
+def GlobToExtendedRegex(glob_pat):
+  lexer = _GlobLexer(glob_pat)
+  parser = _GlobParser(lexer)
+
+  ast = parser.Parse()
+
+  # NOTE: Globs don't normally have parse errors; they just "decay" into
+  # literal strings.
+  # TODO: Should there be a strict mode?
+  err = None
+  return ASTToExtendedRegex(ast), err
+
 
 class GlobParser(object):
   """

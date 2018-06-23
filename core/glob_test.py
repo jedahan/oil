@@ -9,7 +9,9 @@ import unittest
 
 from asdl import py_meta
 from core import glob_
-from osh.meta import glob as g
+from osh.meta import glob as glob_ast
+
+glob_token_e = glob_ast.glob_token_e
 
 
 class GlobEscapeTest(unittest.TestCase):
@@ -93,6 +95,21 @@ class GlobEscapeTest(unittest.TestCase):
     result = r2.sub('X', 'a-b-c', count=1)
     self.assertEqual('X-b-c', result)
 
+
+def _ReadTokens(s):
+  tokens = []
+  lex = glob_._GlobLexer(s)
+  while True:
+    tok = lex.Read()
+    tokens.append(tok)
+    if tok.tag == glob_token_e.Eof:
+      break
+  return tokens
+
+
+class GlobParserTest(unittest.TestCase):
+
+  # TODO: Replace with test_lib?
   def assertASTEqual(self, expected_ast, ast):
     """Asserts that 2 ASDL-defined ASTs are equal."""
     expected_is_node = isinstance(expected_ast, py_meta.CompoundObj)
@@ -114,7 +131,18 @@ class GlobEscapeTest(unittest.TestCase):
       else:
         self.assertASTEqual(exp_slot, slot)
 
+  def testGlobLexer(self):
+    print(_ReadTokens(''))
+    print(_ReadTokens('*.py'))
+    print(_ReadTokens('\*.py'))
+    print(_ReadTokens('[abc]'))
+    print(_ReadTokens('\\'))  # Enf
+    print(_ReadTokens('\\x'))
+    print(_ReadTokens(r'\\'))
+
+
   def testGlobParser(self):
+    g = glob_ast
     CASES = [
         # (glob input, expected AST, expected extended regexp, has error)
         ('*.py', [g.Star()] + [g.Literal(c) for c in '.py'], '.*\.py', False),
@@ -147,6 +175,11 @@ class GlobEscapeTest(unittest.TestCase):
         # invalid globs
         ('not_closed[a-z', None, None, True),
         ('[[:spa[ce:]]', None, None, True),
+
+        # Regression test for IndexError.
+        #('[', None, None, True),
+        #('\\', None, None, True),
+        (']', None, None, False),
     ]
     for glob, expected_parts, expected_ere, expected_err in CASES:
       if expected_parts:
