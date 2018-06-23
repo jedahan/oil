@@ -516,9 +516,9 @@ LEXER_DEF[lex_mode_e.ARITH] = \
 # From code: ( | ) are treated special.
 
 
-# For converting globs to extended regexes.  Since we're only parsing character
-# classes like [[:space:][:alpha:]] as opaque blobs, we don't need lexer modes
-# here.
+# A lexer for the parser that converts globs to extended regexes.  Since we're
+# only parsing character classes ([^[:space:][:alpha:]]) as opaque blobs, we
+# don't need lexer modes here.
 GLOB_DEF = [
   # These could be operators in the glob, or just literals in a char class, e.g.
   # touch '?'; echo [?].

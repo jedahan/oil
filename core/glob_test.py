@@ -190,6 +190,8 @@ class GlobParserTest(unittest.TestCase):
         (']', None, None, False),
     ]
     for glob, expected_parts, expected_ere, expected_err in CASES:
+      glob_.GlobToERE(glob)
+
       if expected_parts:
         expected_ast = g.glob(expected_parts)
       else:

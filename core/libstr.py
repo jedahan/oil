@@ -160,6 +160,8 @@ def PatSub(s, op, pat, replace_str):
   if err:
     e_die("Can't convert glob to regex: %r", pat)
 
+  #regex, warnings = glob_.GlobToERE(pat)
+
   if regex is None:  # Simple/fast path for fixed strings
     if op.do_all:
       return s.replace(pat, replace_str)

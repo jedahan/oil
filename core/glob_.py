@@ -8,7 +8,10 @@ try:
 except ImportError:
   from benchmarks import fake_libc as libc
 
+# TODO: Remove this
 from osh.meta import glob as glob_ast
+from osh.meta import ast, Id
+from osh import match
 from core import util
 
 log = util.log
@@ -133,6 +136,43 @@ def GlobToExtendedRegex(glob_pat):
   # TODO: Should there be a strict mode?
   err = None
   return ASTToExtendedRegex(ast), err
+
+
+def _ParseCharClass(tokens):
+  pass
+
+
+def GlobToERE(pat):
+  lexer = match.GLOB_LEXER
+
+  tokens = lexer.Tokens(pat)
+  parts = []
+
+  for id_, s in tokens:
+    util.log('%s %r', id_, s)
+
+    if id_ in (Id.Glob_Star, Id.Glob_QMark):
+      part = ast.GlobOp(id_)
+
+    elif id_ == Id.Glob_LBracket:
+      # Could return a GlobLit or a CharClass
+      part = _ParseCharClass(tokens)
+
+    elif id_ == Id.Glob_EscapedChar:
+      part = ast.GlobLit(s[1:])  # r'\*' becomes '*' and r'\x' becomes 'x'
+
+    elif id_ == Id.Glob_RBracket:
+      # TODO: Warn about unbalanced right bracket.
+      part = ast.GlobLit(s)
+
+    else:  # Glob_{Bang,Caret,BadBackslash,Literals}
+      part = ast.GlobLit(s)
+    parts.append(part)
+
+  # Now return
+
+  regex, warnings = None, None
+  return regex, warnings
 
 
 class GlobParser(object):
