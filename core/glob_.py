@@ -80,18 +80,17 @@ def GlobEscape(s):
 class _GlobParser(object):
   def __init__(self, lexer):
     self.lexer = lexer
-    self.cur_token = None
+    self.token_type = None
+    self.token_val = ''
     self.warnings = []
 
   def _Next(self):
     """Move to the next token."""
     try:
-      id_, s = self.lexer.next()
+      self.token_type, self.token_val = self.lexer.next()
     except StopIteration:
-      id_ = Id.Glob_Eof
-      s = ''
-    self.token_type = id_
-    self.token_val = s
+      self.token_type = Id.Glob_Eof
+      self.token_val = ''
 
   def _ParseCharClass(self):
     """
