@@ -20,7 +20,8 @@ else:
     fastlex = None
 
 if fastlex:
-  re = None  # Shouldn't use re module in this case
+  #re = None  # Shouldn't use re module in this case
+  import re
 else:
   import re
 
@@ -92,7 +93,7 @@ class SimpleLexer(object):
       pos = end_pos
 
 
-class _MatchEchoToken_Slow(object):
+class _MatchTokenSlow(object):
   def __init__(self, pat_list):
     self.pat_list = _CompileAll(pat_list)
 
@@ -112,7 +113,7 @@ if fastlex:
   IsValidVarName = fastlex.IsValidVarName
 else:
   MATCHER = _MatchOshToken_Slow(lex.LEXER_DEF)
-  ECHO_MATCHER = _MatchEchoToken_Slow(lex.ECHO_E_DEF)
+  ECHO_MATCHER = _MatchTokenSlow(lex.ECHO_E_DEF)
 
   # Used by osh/cmd_parse.py to validate for loop name.  Note it must be
   # anchored on the right.
@@ -121,5 +122,8 @@ else:
   def IsValidVarName(s):
     return _VAR_NAME_RE.match(s)
 
+
+GLOB_MATCHER = _MatchTokenSlow(lex.GLOB_DEF)
+GLOB_LEXER = SimpleLexer(GLOB_MATCHER)
 
 ECHO_LEXER = SimpleLexer(ECHO_MATCHER)

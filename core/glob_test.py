@@ -10,6 +10,7 @@ import unittest
 from asdl import py_meta
 from core import glob_
 from osh.meta import glob as glob_ast
+from osh import match
 
 glob_token_e = glob_ast.glob_token_e
 
@@ -96,6 +97,7 @@ class GlobEscapeTest(unittest.TestCase):
     self.assertEqual('X-b-c', result)
 
 
+#match.GLOB_LEXER
 def _ReadTokens(s):
   tokens = []
   lex = glob_._GlobLexer(s)
@@ -105,6 +107,11 @@ def _ReadTokens(s):
     if tok.tag == glob_token_e.Eof:
       break
   return tokens
+
+# TODO: yield?
+def _ReadTokens(s):
+  lex = match.GLOB_LEXER
+  return list(lex.Tokens(s))
 
 
 class GlobParserTest(unittest.TestCase):
@@ -139,7 +146,8 @@ class GlobParserTest(unittest.TestCase):
     print(_ReadTokens('\\'))  # Enf
     print(_ReadTokens('\\x'))
     print(_ReadTokens(r'\\'))
-
+    print(_ReadTokens(r'[[:alpha:]]'))
+    print(_ReadTokens(r'[?]'))
 
   def testGlobParser(self):
     g = glob_ast

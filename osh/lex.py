@@ -514,3 +514,24 @@ LEXER_DEF[lex_mode_e.ARITH] = \
 # them with regcomp.  I've only seen constant regexes.
 #
 # From code: ( | ) are treated special.
+
+
+# For converting globs to extended regexes.
+GLOB_DEF = [
+  # These could be operators in the glob, or just literals in a char class, e.g.
+  # touch '?'; echo [?].  We don't bother with lexer modes here.
+  C(r'*', Id.Glob_LiteralChar),
+  C(r'?', Id.Glob_LiteralChar),
+
+  C(r'[', Id.Glob_LBracket),
+  C(r']', Id.Glob_RBracket),
+
+  R(r'\\.', Id.Glob_EscapedChar),
+  # Trailing single backslash
+  C('\\', Id.Glob_BadBackslash),
+
+  # For efficiency, combine many other characters,  e.g. 'foo' or ':alpha:'.
+  # TODO: re2c has the '*' clause; could we this in Python too?  Although that
+  # only matches on character.
+  R(r'[^*?\[\]\\\0]+', Id.Glob_Literals),
+]
