@@ -75,10 +75,7 @@ def _MatchOshToken_Fast(lex_mode, line, start_pos):
 
 
 class SimpleLexer(object):
-  """Lexer for echo -e, which interprets C-escaped strings.
-
-  Based on osh/parse_lib.py MatchOshToken_Slow.
-  """
+  """Lexer for echo -e, which interprets C-escaped strings."""
   def __init__(self, match_func):
     self.match_func = match_func
 
