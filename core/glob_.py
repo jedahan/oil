@@ -77,42 +77,20 @@ def GlobEscape(s):
 # - Honestly I would like a more principled parser for globs!  Can re2c do
 # better here?
 
-class _GlobLexer(object):
-  def __init__(self, s):
-    self.s = s
-    self.n = len(s)
-    self.i = 0
-
-  def Read(self):
-    """Read the next token.
-
-    Char | EscapedChar | Eof
-    """
-    if self.i == self.n:
-      return glob_ast.Eof()
-
-    c = self.s[self.i]
-    if c == '\\':
-      self.i += 1
-      if self.i == self.n:
-        # A backslash at the end of the string is considered a literal.
-        # NOTE: Could warn about bad syntax in this case.
-        return glob_ast.Char(c)
-      c2 = self.s[self.i]
-      self.i += 1
-      return glob_ast.EscapedChar(c2)
-
-    self.i += 1
-    return glob_ast.Char(c)
-
-
 class _GlobParser(object):
   def __init__(self, lexer):
     self.lexer = lexer
     self.cur_token = None
 
   def _Next(self):
-    self.cur_token = self.lexer.Read()
+    """Move to the next token."""
+    try:
+      id_, s = self.lexer.next()
+    except StopIteration:
+      id_ = Id.Glob_Eof
+      s = ''
+    self.token_type = id_
+    self.token_val = s
 
   def _ParseCharClass(self):
     pass
@@ -120,58 +98,50 @@ class _GlobParser(object):
   def Parse(self):
     """
     Returns:
-    is_glob
+    regex, warnings
     """
-    pass
+    parts = []
+    warnings = []
+
+    while True:
+      self._Next()
+      id_ = self.token_type
+      s = self.token_val
+
+      util.log('%s %r', self.token_type, self.token_val)
+      if id_ == Id.Glob_Eof:
+        break
+
+      if id_ in (Id.Glob_Star, Id.Glob_QMark):
+        part = ast.GlobOp(id_)
+
+      elif id_ == Id.Glob_LBracket:
+        # Could return a GlobLit or a CharClass
+        part = self._ParseCharClass()
+
+      elif id_ == Id.Glob_EscapedChar:
+        part = ast.GlobLit(s[1:])  # r'\*' becomes '*' and r'\x' becomes 'x'
+
+      elif id_ == Id.Glob_RBracket:
+        # TODO: Warn about unbalanced right bracket.
+        part = ast.GlobLit(s)
+
+      else:  # Glob_{Bang,Caret,BadBackslash,Literals}
+        part = ast.GlobLit(s)
+      parts.append(part)
+
+    return parts, warnings
 
 
-def GlobToExtendedRegex(glob_pat):
-  lexer = _GlobLexer(glob_pat)
-  parser = _GlobParser(lexer)
-
-  ast = parser.Parse()
-
-  # NOTE: Globs don't normally have parse errors; they just "decay" into
-  # literal strings.
-  # TODO: Should there be a strict mode?
-  err = None
-  return ASTToExtendedRegex(ast), err
-
-
-def _ParseCharClass(tokens):
-  pass
+def _GenerateERE(partsj):
+  return ''
 
 
 def GlobToERE(pat):
-  lexer = match.GLOB_LEXER
-
-  tokens = lexer.Tokens(pat)
-  parts = []
-
-  for id_, s in tokens:
-    util.log('%s %r', id_, s)
-
-    if id_ in (Id.Glob_Star, Id.Glob_QMark):
-      part = ast.GlobOp(id_)
-
-    elif id_ == Id.Glob_LBracket:
-      # Could return a GlobLit or a CharClass
-      part = _ParseCharClass(tokens)
-
-    elif id_ == Id.Glob_EscapedChar:
-      part = ast.GlobLit(s[1:])  # r'\*' becomes '*' and r'\x' becomes 'x'
-
-    elif id_ == Id.Glob_RBracket:
-      # TODO: Warn about unbalanced right bracket.
-      part = ast.GlobLit(s)
-
-    else:  # Glob_{Bang,Caret,BadBackslash,Literals}
-      part = ast.GlobLit(s)
-    parts.append(part)
-
-  # Now return
-
-  regex, warnings = None, None
+  lexer = match.GLOB_LEXER.Tokens(pat)
+  p = _GlobParser(lexer)
+  parts, warnings = p.Parse()
+  regex = _GenerateERE(parts)
   return regex, warnings
 
 

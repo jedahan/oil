@@ -373,6 +373,7 @@ def AddKinds(spec):
       'Star', 'QMark', 'Bang', 'Caret',
       'EscapedChar', 'BadBackslash',
       'Literals',
+      'Eof',
   ])
 
 
