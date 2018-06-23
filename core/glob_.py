@@ -106,6 +106,8 @@ class _GlobParser(object):
       self._Next()
 
       if self.token_type == Id.Glob_Eof:
+        # TODO: location info
+        self.warnings.append('Malformed character class; treating as literal')
         return ast.GlobLit(parts)
 
       if self.token_type == Id.Glob_LBracket:
@@ -146,12 +148,15 @@ class _GlobParser(object):
       elif id_ == Id.Glob_EscapedChar:
         part = ast.GlobLit(s[1:])  # r'\*' becomes '*' and r'\x' becomes 'x'
 
-      elif id_ == Id.Glob_RBracket:
-        # TODO: Warn about unbalanced right bracket.
+      else:  # Glob_{Bang,Caret,Literals,RBracket,BadBackslash}
         part = ast.GlobLit(s)
 
-      else:  # Glob_{Bang,Caret,BadBackslash,Literals}
-        part = ast.GlobLit(s)
+      # Also check for warnings.  TODO: location info.
+      if id_ == Id.Glob_RBracket:
+        self.warnings.append('Got unescaped right bracket')
+      if id_ == Id.Glob_BadBackslash:
+        self.warnings.append('Got unescaped trailing backslash')
+
       parts.append(part)
 
     return parts, self.warnings
