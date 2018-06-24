@@ -15,8 +15,8 @@ from osh import match
 from core import util
 
 log = util.log
-glob_part_e = glob_ast.glob_part_e
-glob_token_e = glob_ast.glob_token_e
+ge = glob_ast.glob_part_e
+glob_part_e = ast.glob_part_e
 
 
 def LooksLikeGlob(s):
@@ -169,8 +169,37 @@ class _GlobParser(object):
     return parts, self.warnings
 
 
-def _GenerateERE(partsj):
-  return ''
+def _GenerateERE(parts):
+  out = []
+
+  for part in parts:
+    if part.tag == glob_part_e.GlobLit:
+      # TODO: We should lex differently?
+      for s in part.tokens:
+        for c in s:
+          if c in '.|^$()+*?[]{}\\':
+            out.append('\\')
+          out.append(c)
+
+    elif part.tag == glob_part_e.GlobOp:
+      if part.op_id == Id.Glob_QMark:
+        out.append('.')
+      elif part.op_id == Id.Glob_Star:
+        out.append('.*')
+      else:
+        raise AssertionError
+
+    elif part.tag == glob_part_e.CharClass:
+      out.append('[')
+      if part.negated:
+        out.append('^')
+
+      # Important: the parts are LITERALLY preserved.
+      for s in part.tokens:
+        out.append(s)
+      out.append(']')
+
+  return ''.join(out)
 
 
 def GlobToERE(pat):
@@ -310,18 +339,18 @@ class GlobParser(object):
 
     out = []
     for part in ast.parts:
-      if part.tag == glob_part_e.Literal:
+      if part.tag == ge.Literal:
         if part.s in '.|^$()+*?[]{}\\':
           out.append('\\')
         out.append(part.s)
 
-      elif part.tag == glob_part_e.Star:
+      elif part.tag == ge.Star:
         out.append('.*')
 
-      elif part.tag == glob_part_e.QMark:
+      elif part.tag == ge.QMark:
         out.append('.')
 
-      elif part.tag == glob_part_e.CharClassExpr:
+      elif part.tag == ge.CharClassExpr:
         out.append('[')
         if part.negated:
           out.append('^')

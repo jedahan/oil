@@ -192,7 +192,9 @@ class GlobParserTest(unittest.TestCase):
     for glob, expected_parts, expected_ere, expected_err in CASES:
       print('===')
       print(glob)
-      glob_.GlobToERE(glob)
+      regex, warnings = glob_.GlobToERE(glob)
+      print('regex   : %s' % regex)
+      print('warnings: %s' % warnings)
 
       if expected_parts:
         expected_ast = g.glob(expected_parts)
