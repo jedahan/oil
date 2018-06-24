@@ -132,7 +132,7 @@ def _AllMatchPositions(s, regex):
       break
     matches.append(m)
     start, end = m
-    log('m = %r, %r' % (start, end))
+    #log('m = %r, %r' % (start, end))
     pos = end  # advance position
   return matches
 
@@ -191,7 +191,7 @@ def PatSub(s, op, pat, replace_str):
       regex = regex + '$'
 
     m = libc.regex_first_group_match(regex, s, 0)
-    log('regex = %r, s = %r, match = %r', regex, s, m)
+    #log('regex = %r, s = %r, match = %r', regex, s, m)
     if m is None:
       return s
     start, end = m
