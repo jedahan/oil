@@ -81,6 +81,9 @@ class SimpleLexer(object):
   def Tokens(self, line):
     """Yields tokens."""
     pos = 0
+    # NOTE: We're not using Eol_Tok like LineLexer.  We probably should.  And
+    # then the consumers of the ECHO_E_DEF and GLOB_DEF should use it.  Get rid
+    # of Glob_Eof.
     n = len(line)
     while pos != n:
       # NOTE: Need longest-match semantics to find \377 vs \.
