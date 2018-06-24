@@ -229,8 +229,6 @@ module osh
   | GlobOp(id op_id)  -- * or ?
   | CharClass(bool negated, string* strs)
 
-  glob = (glob_part* parts)
-
   -- Char classes are opaque for now.  If we ever need them:
   -- * Collating symbols are [. .]
   -- * Equivalence classes are [=
