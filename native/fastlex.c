@@ -128,6 +128,8 @@ static PyMethodDef methods[] = {
    "(lexer mode, line, start_pos) -> (id, end_pos)."},
   {"MatchEchoToken", fastlex_MatchEchoToken, METH_VARARGS,
    "(line, start_pos) -> (id, end_pos)."},
+  {"MatchGlobToken", fastlex_MatchGlobToken, METH_VARARGS,
+   "(line, start_pos) -> (id, end_pos)."},
   {"IsValidVarName", fastlex_IsValidVarName, METH_VARARGS,
    "Is it a valid var name?"},
   {"IsPlainWord", fastlex_IsPlainWord, METH_VARARGS,
