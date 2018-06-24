@@ -533,7 +533,7 @@ GLOB_DEF = [
   C('[', Id.Glob_LBracket),
   C(']', Id.Glob_RBracket),
 
-  R(r'\\.', Id.Glob_EscapedChar),
+  R(r'\\[^\0]', Id.Glob_EscapedChar),
   C('\\', Id.Glob_BadBackslash),  # Trailing single backslash
 
   # For efficiency, combine other characters into a single token,  e.g. '.py'

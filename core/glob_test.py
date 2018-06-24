@@ -97,18 +97,6 @@ class GlobEscapeTest(unittest.TestCase):
     self.assertEqual('X-b-c', result)
 
 
-#match.GLOB_LEXER
-def _ReadTokens(s):
-  tokens = []
-  lex = glob_._GlobLexer(s)
-  while True:
-    tok = lex.Read()
-    tokens.append(tok)
-    if tok.tag == glob_token_e.Eof:
-      break
-  return tokens
-
-# TODO: yield?
 def _ReadTokens(s):
   lex = match.GLOB_LEXER
   return list(lex.Tokens(s))
