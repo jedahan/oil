@@ -174,8 +174,8 @@ class GlobParserTest(unittest.TestCase):
         ('[[:spa[ce:]]', None, None, True),
 
         # Regression test for IndexError.
-        #('[', None, None, True),
-        #('\\', None, None, True),
+        ('[', None, None, True),
+        ('\\', None, None, True),
         (']', None, None, False),
     ]
     for glob, expected_parts, expected_ere, expected_err in CASES:
