@@ -220,9 +220,8 @@ module osh
 
   -- Example: *.[ch] is:
   --   GlobOp(<Glob_Star '*'>),
-  --   Literal([<Glob_Literals '.'>]),
-  --   CharClassExpr(False, [<Glob_LBracket '['>, <Glob_Literals 'ch'>, 
-  --                         <Glob_RBracket ']'>])
+  --   GlobLit(Glob_OtherLiteral, '.'),
+  --   CharClassExpr(False, 'ch')  # from Glob_CleanLiterals token
 
   glob_part =
     GlobLit(id id, string s)
