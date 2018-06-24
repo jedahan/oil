@@ -520,23 +520,25 @@ LEXER_DEF[lex_mode_e.ARITH] = \
 # only parsing character classes ([^[:space:][:alpha:]]) as opaque blobs, we
 # don't need lexer modes here.
 GLOB_DEF = [
-  # These could be operators in the glob, or just literals in a char class, e.g.
-  # touch '?'; echo [?].
+  # These could be operators in the glob, or just literals in a char class,
+  # e.g.  touch '?'; echo [?].
   C('*', Id.Glob_Star),
   C('?', Id.Glob_QMark),
+
   # For negation.
   C('!', Id.Glob_Bang),
   C('^', Id.Glob_Caret),
 
+  # Character classes.
   C('[', Id.Glob_LBracket),
   C(']', Id.Glob_RBracket),
 
   R(r'\\.', Id.Glob_EscapedChar),
-  # Trailing single backslash
-  C('\\', Id.Glob_BadBackslash),
+  C('\\', Id.Glob_BadBackslash),  # Trailing single backslash
 
   # For efficiency, combine other characters into a single token,  e.g. '.py'
   # or ':alpha:'.  TODO: re2c has the '*' clause; could we this in Python too?
   # Although that only matches on character.
-  R(r'[^*?!\^\[\]\\\0]+', Id.Glob_Literals),
+  R(r'[a-zA-Z0-9_]+', Id.Glob_CleanLiterals),  # no regex escaping
+  R(r'.', Id.Glob_OtherLiteral),  # anything else -- examine the char
 ]

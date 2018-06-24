@@ -225,9 +225,9 @@ module osh
   --                         <Glob_RBracket ']'>])
 
   glob_part =
-    GlobLit(token* tokens)
+    GlobLit(id id, string s)
   | GlobOp(id op_id)  -- * or ?
-  | CharClass(bool negated, token* tokens)
+  | CharClass(bool negated, string* strs)
 
   glob = (glob_part* parts)
 

@@ -372,7 +372,7 @@ def AddKinds(spec):
       'LBracket', 'RBracket',
       'Star', 'QMark', 'Bang', 'Caret',
       'EscapedChar', 'BadBackslash',
-      'Literals',
+      'CleanLiterals', 'OtherLiteral',
       'Eof',
   ])
 

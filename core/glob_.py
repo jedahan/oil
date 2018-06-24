@@ -72,12 +72,9 @@ def GlobEscape(s):
 # Problems:
 # - What about unicode?  Do we have to set any global variables?  We want it to
 # always use utf-8?
-# - Character class for glob is different than char class for regex?  According
-# to the standard, anyway.
-# - Honestly I would like a more principled parser for globs!  Can re2c do
-# better here?
 
 class _GlobParser(object):
+
   def __init__(self, lexer):
     self.lexer = lexer
     self.token_type = None
@@ -99,7 +96,7 @@ class _GlobParser(object):
       case, we also append a warning.
     """
     balance = 1  # We already saw a [
-    strs = []
+    tokens = []
 
     # NOTE: There is a special rule where []] and [[] are valid globs.  Should
     # we accept that?  Probably, but we should also warn about it.
@@ -110,7 +107,7 @@ class _GlobParser(object):
       if self.token_type == Id.Glob_Eof:
         # TODO: location info
         self.warnings.append('Malformed character class; treating as literal')
-        return ast.GlobLit(strs)
+        return [ast.GlobLit(id_, s) for (id_, s) in tokens]
 
       if self.token_type == Id.Glob_LBracket:
         balance += 1
@@ -119,15 +116,16 @@ class _GlobParser(object):
 
       if balance == 0:
         break
-      strs.append(self.token_val)  # Don't append the last ]
+      tokens.append((self.token_type, self.token_val))  # Don't append the last ]
 
-    # TODO: Is it better to check for Glob_{Bang,Caret} ?
-    # Warn about the one that's not recommended?
     negated = False
-    if strs and strs[0] in '!^':
-      negated = True
-      strs = strs[1:]
-    return ast.CharClass(negated, strs)
+    if tokens:
+      id1, _ = tokens[0]
+      # TODO: Warn about the one that's not recommended?
+      if id1 in (Id.Glob_Bang, Id.Glob_Caret):
+        negated = True
+        tokens = tokens[1:]
+    return [ast.CharClass(negated, [s for _, s in tokens])]
 
   def Parse(self):
     """
@@ -146,17 +144,14 @@ class _GlobParser(object):
         break
 
       if id_ in (Id.Glob_Star, Id.Glob_QMark):
-        part = ast.GlobOp(id_)
+        parts.append(ast.GlobOp(id_))
 
       elif id_ == Id.Glob_LBracket:
         # Could return a GlobLit or a CharClass
-        part = self._ParseCharClass()
+        parts.extend(self._ParseCharClass())
 
-      elif id_ == Id.Glob_EscapedChar:
-        part = ast.GlobLit([s[1:]])  # r'\*' becomes '*' and r'\x' becomes 'x'
-
-      else:  # Glob_{Bang,Caret,Literals,RBracket,BadBackslash}
-        part = ast.GlobLit([s])
+      else:  # Glob_{Bang,Caret,Literals,RBracket,EscapedChar,BadBackslash}
+        parts.append(ast.GlobLit(id_, s))
 
       # Also check for warnings.  TODO: location info.
       if id_ == Id.Glob_RBracket:
@@ -164,22 +159,34 @@ class _GlobParser(object):
       if id_ == Id.Glob_BadBackslash:
         self.warnings.append('Got unescaped trailing backslash')
 
-      parts.append(part)
-
     return parts, self.warnings
 
+
+_REGEX_CHARS_TO_ESCAPE = '.|^$()+*?[]{}\\'
 
 def _GenerateERE(parts):
   out = []
 
   for part in parts:
     if part.tag == glob_part_e.GlobLit:
-      # TODO: We should lex differently?
-      for s in part.tokens:
-        for c in s:
-          if c in '.|^$()+*?[]{}\\':
-            out.append('\\')
-          out.append(c)
+      if part.id == Id.Glob_EscapedChar:
+        assert len(part.s) == 2, part.s
+        # The user could have escaped a char that doesn't need regex escaping,
+        # like \b or something.
+        c = part.s[1]
+        if c in _REGEX_CHARS_TO_ESCAPE:
+          out.append('\\')
+        out.append(c)
+
+      elif part.id == Id.Glob_CleanLiterals:
+        out.append(part.s)  # e.g. 'py' doesn't need to be escaped
+
+      elif part.id == Id.Glob_OtherLiteral:
+        assert len(part.s) == 1, part.s
+        c = part.s
+        if c in _REGEX_CHARS_TO_ESCAPE:
+          out.append('\\')
+        out.append(c)
 
     elif part.tag == glob_part_e.GlobOp:
       if part.op_id == Id.Glob_QMark:
@@ -194,8 +201,10 @@ def _GenerateERE(parts):
       if part.negated:
         out.append('^')
 
-      # Important: the parts are LITERALLY preserved.
-      for s in part.tokens:
+      # Important: the character class is LITERALLY preserved, because we
+      # assume glob char classes are EXACTLY the same as regex char classes,
+      # including the escaping rules.
+      for s in part.strs:
         out.append(s)
       out.append(']')
 
@@ -207,6 +216,8 @@ def GlobToERE(pat):
   p = _GlobParser(lexer)
   parts, warnings = p.Parse()
 
+  # If there is nothing like * ? or [abc], then the whole string is a literal,
+  # and we can use a more efficient mechanism.
   is_glob = False
   for p in parts:
     if p.tag in (glob_part_e.GlobOp, glob_part_e.CharClass):
