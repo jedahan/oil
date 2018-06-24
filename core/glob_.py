@@ -130,7 +130,8 @@ class _GlobParser(object):
   def Parse(self):
     """
     Returns:
-    regex, warnings
+      regex string (or None if it's not a glob)
+      A list of warnings about the syntax
     """
     parts = []
 
@@ -150,7 +151,8 @@ class _GlobParser(object):
         # Could return a GlobLit or a CharClass
         parts.extend(self._ParseCharClass())
 
-      else:  # Glob_{Bang,Caret,Literals,RBracket,EscapedChar,BadBackslash}
+      else: # Glob_{Bang,Caret,CleanLiterals,OtherLiteral,RBracket,EscapedChar,
+            #       BadBackslash}
         parts.append(ast.GlobLit(id_, s))
 
       # Also check for warnings.  TODO: location info.
@@ -226,12 +228,12 @@ def GlobToERE(pat):
   if not is_glob:
     return None, warnings
 
-  from asdl import format as fmt
-  import sys
-  #fmt.PrintTree(parts, fmt.DetectConsoleOutput(sys.stdout))
-  print('---')
-  for p in parts:
-    print(p)
+  if 0:
+    import sys
+    from asdl import format as fmt
+    print('---')
+    for p in parts:
+      print(p)
 
   regex = _GenerateERE(parts)
   return regex, warnings
