@@ -207,6 +207,14 @@ def GlobToERE(pat):
   p = _GlobParser(lexer)
   parts, warnings = p.Parse()
 
+  is_glob = False
+  for p in parts:
+    if p.tag in (glob_part_e.GlobOp, glob_part_e.CharClass):
+      is_glob = True
+
+  if not is_glob:
+    return None, warnings
+
   from asdl import format as fmt
   import sys
   #fmt.PrintTree(parts, fmt.DetectConsoleOutput(sys.stdout))

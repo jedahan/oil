@@ -538,5 +538,5 @@ GLOB_DEF = [
   # For efficiency, combine other characters into a single token,  e.g. '.py'
   # or ':alpha:'.  TODO: re2c has the '*' clause; could we this in Python too?
   # Although that only matches on character.
-  R(r'[^*?\[\]\\\0]+', Id.Glob_Literals),
+  R(r'[^*?!\^\[\]\\\0]+', Id.Glob_Literals),
 ]
