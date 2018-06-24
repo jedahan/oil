@@ -99,7 +99,10 @@ class _GlobParser(object):
       case, we also append a warning.
     """
     balance = 1  # We already saw a [
-    parts = []
+    strs = []
+
+    # NOTE: There is a special rule where []] and [[] are valid globs.  Should
+    # we accept that?  Probably, but we should also warn about it.
 
     while True:
       self._Next()
@@ -107,7 +110,7 @@ class _GlobParser(object):
       if self.token_type == Id.Glob_Eof:
         # TODO: location info
         self.warnings.append('Malformed character class; treating as literal')
-        return ast.GlobLit(parts)
+        return ast.GlobLit(strs)
 
       if self.token_type == Id.Glob_LBracket:
         balance += 1
@@ -116,10 +119,15 @@ class _GlobParser(object):
 
       if balance == 0:
         break
-      parts.append(self.token_val)  # Don't append the last ]
+      strs.append(self.token_val)  # Don't append the last ]
 
-    # TODO: Check the first part for Glob_{Bang,Caret}
-    return ast.CharClass(True, parts)
+    # TODO: Is it better to check for Glob_{Bang,Caret} ?
+    # Warn about the one that's not recommended?
+    negated = False
+    if strs and strs[0] in '!^':
+      negated = True
+      strs = strs[1:]
+    return ast.CharClass(negated, strs)
 
   def Parse(self):
     """
@@ -133,7 +141,7 @@ class _GlobParser(object):
       id_ = self.token_type
       s = self.token_val
 
-      util.log('%s %r', self.token_type, self.token_val)
+      #util.log('%s %r', self.token_type, self.token_val)
       if id_ == Id.Glob_Eof:
         break
 
@@ -145,10 +153,10 @@ class _GlobParser(object):
         part = self._ParseCharClass()
 
       elif id_ == Id.Glob_EscapedChar:
-        part = ast.GlobLit(s[1:])  # r'\*' becomes '*' and r'\x' becomes 'x'
+        part = ast.GlobLit([s[1:]])  # r'\*' becomes '*' and r'\x' becomes 'x'
 
       else:  # Glob_{Bang,Caret,Literals,RBracket,BadBackslash}
-        part = ast.GlobLit(s)
+        part = ast.GlobLit([s])
 
       # Also check for warnings.  TODO: location info.
       if id_ == Id.Glob_RBracket:
@@ -173,8 +181,9 @@ def GlobToERE(pat):
   from asdl import format as fmt
   import sys
   #fmt.PrintTree(parts, fmt.DetectConsoleOutput(sys.stdout))
-  #for p in parts:
-  #  fmt.PrintTree(p, fmt.DetectConsoleOutput(sys.stdout))
+  print('---')
+  for p in parts:
+    print(p)
 
   regex = _GenerateERE(parts)
   return regex, warnings
