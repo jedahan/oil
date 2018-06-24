@@ -156,11 +156,10 @@ def PatSub(s, op, pat, replace_str):
   """Helper for ${x/pat/replace}."""
   #log('PAT %r REPLACE %r', pat, replace_str)
 
-  regex, err = glob_.GlobParser().GlobToExtendedRegex(pat)
-  if err:
-    e_die("Can't convert glob to regex: %r", pat)
-
-  #regex, warnings = glob_.GlobToERE(pat)
+  regex, warnings = glob_.GlobToERE(pat)
+  if warnings:
+    # TODO: Add strict mode and expose warnings.
+    pass
 
   if regex is None:  # Simple/fast path for fixed strings
     if op.do_all:
