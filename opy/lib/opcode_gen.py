@@ -20,7 +20,10 @@ def main(argv):
   for num in sorted(opcode.opmap.itervalues()):
     # SLICE+1 -> SLICE_1
     name = opcode.opname[num].replace('+', '_')
-    print('#define %s %s' % (name, num))
+    print('#define %s %d' % (name, num))
+
+  print('')
+  print('#define HAVE_ARGUMENT %d' % opcode.HAVE_ARGUMENT)
 
 
 if __name__ == '__main__':

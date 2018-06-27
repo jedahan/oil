@@ -23,4 +23,24 @@ int main(int argc, char **argv) {
   fclose(f);
 
   printf("Read %zu bytes\n", num_bytes);
+
+  int i = 0;
+  int extended_arg = 0;
+
+  int n = 0;
+
+  while (i < num_bytes) {
+    uint8_t op = bytecode[i];
+    int oparg = bytecode[i] + bytecode[i+1]*256 + extended_arg;
+
+    printf("op\n");
+    if (op > HAVE_ARGUMENT) {
+      printf("-- has arg\n");
+      i += 2;
+    }
+    i++;
+    n++;
+  }
+
+  printf("Read %d instructions\n", n);
 }
