@@ -31,14 +31,14 @@ int main(int argc, char **argv) {
 
   while (i < num_bytes) {
     uint8_t op = bytecode[i];
-    int oparg = bytecode[i] + bytecode[i+1]*256 + extended_arg;
-
+    i++;
     printf("%s\n", kOpcodeNames[op]);
+
     if (op > HAVE_ARGUMENT) {
-      printf("  has arg\n");
+      int oparg = bytecode[i] + bytecode[i+1]*256 + extended_arg;
+      printf("  arg %d\n", oparg);
       i += 2;
     }
-    i++;
     n++;
   }
 
