@@ -33,9 +33,9 @@ int main(int argc, char **argv) {
     uint8_t op = bytecode[i];
     int oparg = bytecode[i] + bytecode[i+1]*256 + extended_arg;
 
-    printf("op\n");
+    printf("%s\n", kOpcodeNames[op]);
     if (op > HAVE_ARGUMENT) {
-      printf("-- has arg\n");
+      printf("  has arg\n");
       i += 2;
     }
     i++;

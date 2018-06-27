@@ -16,14 +16,28 @@ def log(msg, *args):
 
 
 def main(argv):
+  opcode_nums = set(opcode.opmap.itervalues())
+
   # Print opcodes in numerical order.  They're not contiguous integers.
-  for num in sorted(opcode.opmap.itervalues()):
+  for num in sorted(opcode_nums):
     # SLICE+1 -> SLICE_1
     name = opcode.opname[num].replace('+', '_')
     print('#define %s %d' % (name, num))
 
   print('')
   print('#define HAVE_ARGUMENT %d' % opcode.HAVE_ARGUMENT)
+
+  #log('%s', opcode.opname)
+
+  print('')
+  print('const char* const kOpcodeNames[] = {')
+  n = max(opcode_nums)
+  for i in xrange(n+1):
+    if i in opcode_nums:
+      print('"%s",' % opcode.opname[i])
+    else:
+      print('"",')  # empty value
+  print('};')
 
 
 if __name__ == '__main__':
