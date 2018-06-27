@@ -243,8 +243,8 @@ fib-dis() {
 run-ovm() {
   local bin=_tmp/ovm_main
 
-  # TODO: generate code
-  touch _tmp/opcode.h
+  # generate code
+  PYTHONPATH=. lib/opcode_gen.py > _tmp/opcode.h
 
   cc -I _tmp -o $bin ../ovm/ovm_main.cc
   #cc -I ../Python-2.7.13/Include -o $bin ../ovm/ovm_main.cc
