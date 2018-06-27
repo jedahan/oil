@@ -18,10 +18,9 @@ int main(int argc, char **argv) {
   size_t num_bytes = ftell(f);
   fseek(f, 0, SEEK_SET);  //same as rewind(f);
 
-  uint8_t* image = static_cast<uint8_t*>(malloc(num_bytes + 1));
-  fread(image, num_bytes, 1, f);
+  uint8_t* bytecode = static_cast<uint8_t*>(malloc(num_bytes));
+  fread(bytecode, num_bytes, 1, f);
   fclose(f);
 
-  image[num_bytes] = 0;
   printf("Read %zu bytes\n", num_bytes);
 }
