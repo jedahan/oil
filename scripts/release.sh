@@ -177,7 +177,9 @@ _install() {
 
 # Run before benchmarks/auto.sh all.  We just build, and assume we tested.
 benchmark-build() {
-  _install
+  if test -n "$HAVE_ROOT"; then
+    _install
+  fi
   _clean
   _dev-build
 
