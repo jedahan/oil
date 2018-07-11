@@ -32,7 +32,7 @@ r-packages() {
   # Install to a directory that doesn't require root.  This requires setting
   # R_LIBS_USER.  Or library(dplyr, lib.loc = "~/R", but the former is preferable.
   mkdir -p ~/R
-  INSTALL_DEST=$R_PATH Rscript -e 'install.packages(c("dplyr"), lib=Sys.getenv("INSTALL_DEST"), repos="http://cran.us.r-project.org")'
+  INSTALL_DEST=$R_PATH Rscript -e 'install.packages(c("dplyr", "tidyr", "stringr"), lib=Sys.getenv("INSTALL_DEST"), repos="http://cran.us.r-project.org")'
 }
 
 test-r-packages() {
