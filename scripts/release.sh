@@ -5,7 +5,7 @@
 #
 # Steps:
 #   build/doc.sh update-src-versions  (optional)
-#   $0 build-and-test  (builds tarball, runs spec tests, etc.)
+#   $0 build-and-test  (builds tarball, runs unit/spec/gold tests, etc.)
 #     prereq: build/codegen.sh {download,install}-re2c
 #   test/wild.sh all
 #   benchmarks:
@@ -153,6 +153,24 @@ _test-release-build() {
 
   # spec-tests-with-tar-build
   OSH_OVM=$OSH_RELEASE_BINARY test/spec.sh all
+}
+
+# NOTE: Following opy/README.md.  Quick and dirty
+test-opy() {
+  # Set
+  local out=_tmp/opy-release
+  pushd opy
+  ./build.sh oil-repo > $out/build-oil-repo.txt
+  ./test.sh oil-unit-byterun > $out/test-oil-unit-byterun.txt
+  ./test.sh gold > $out/test-oil-gold.txt
+
+  # Hm this needs its own table output?
+  ./test.sh spec all > $out/test-spec-all.txt
+
+  ./regtest.sh compile > $out/regtest-compile.txt
+  ./regtest.sh verify-golden > $out/regtest-verify-golden.txt
+
+  popd
 }
 
 # TODO: Log this whole thing?  Include logs with the /release/ page?
@@ -548,6 +566,9 @@ metrics() {
   build/metrics.sh pyc-bytes > $out/pyc-bytes.txt
 
   line-counts $out/line-counts
+
+  scripts/count.sh oil-python-symbols $out/symbols
+  scripts/count.sh opy-python-symbols $out/symbols
 
   tree $out
 }
