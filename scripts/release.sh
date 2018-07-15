@@ -155,20 +155,42 @@ _test-release-build() {
   OSH_OVM=$OSH_RELEASE_BINARY test/spec.sh all
 }
 
-# NOTE: Following opy/README.md.  Quick and dirty
+# NOTE: Following opy/README.md.  Right now this is a quick and dirty
+# verification.  For example we found out something about the golden checksums
+# for the OPy regtest!
 test-opy() {
-  # Set
-  local out=_tmp/opy-release
+  local out=$PWD/_tmp/opy-release
+  mkdir -p $out
+
   pushd opy
-  ./build.sh oil-repo > $out/build-oil-repo.txt
-  ./test.sh oil-unit-byterun > $out/test-oil-unit-byterun.txt
-  ./test.sh gold > $out/test-oil-gold.txt
 
-  # Hm this needs its own table output?
-  ./test.sh spec all > $out/test-spec-all.txt
+  local step=''
 
-  ./regtest.sh compile > $out/regtest-compile.txt
-  ./regtest.sh verify-golden > $out/regtest-verify-golden.txt
+  step='build-oil-repo'
+  echo "--- $step ---"
+  time ./build.sh oil-repo > $out/$step.txt 2>&1
+  echo $?
+
+  step='test-oil-unit-byterun'
+  echo "--- $step ---"
+  time ./test.sh oil-unit-byterun > $out/$step.txt 2>&1
+  echo $?
+
+  step='test-gold'
+  echo "--- $step ---"
+  time ./test.sh gold > $out/$step.txt 2>&1
+  echo $?
+
+  # Hm does this need its own table output?
+  step='test-spec-all'
+  echo "--- $step ---"
+  time ./test.sh spec all > $out/$step.txt 2>&1
+  echo $?
+
+  # NOTE: This is sensitive to Python 2.7.12 vs .13 vs .14, so don't bother
+  # publishing it for now.
+  #./regtest.sh compile > $out/regtest-compile.txt
+  #./regtest.sh verify-golden > $out/regtest-verify-golden.txt
 
   popd
 }
