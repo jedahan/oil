@@ -357,16 +357,15 @@ def CreateAssertions(case, sh_label):
   status = False
 
   # So the assertion are exactly the same for osh and osh_ALT
-  if sh_label in ('osh_ALT', 'osh-byterun'):
-    sh_label = 'osh'
+  case_sh = 'osh' if sh_label in ('osh_ALT', 'osh-byterun') else sh_label
 
-  if sh_label in case:
-    q = case[sh_label]['qualifier']
-    if CreateStringAssertion(case[sh_label], 'stdout', assertions, qualifier=q):
+  if case_sh in case:
+    q = case[case_sh]['qualifier']
+    if CreateStringAssertion(case[case_sh], 'stdout', assertions, qualifier=q):
       stdout = True
-    if CreateStringAssertion(case[sh_label], 'stderr', assertions, qualifier=q):
+    if CreateStringAssertion(case[case_sh], 'stderr', assertions, qualifier=q):
       stderr = True
-    if CreateIntAssertion(case[sh_label], 'status', assertions, qualifier=q):
+    if CreateIntAssertion(case[case_sh], 'status', assertions, qualifier=q):
       status = True
 
   if not stdout:
