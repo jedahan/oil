@@ -59,6 +59,15 @@ import sys
 import time
 
 
+# Magic strings for other variants of OSH.
+
+# NOTE: osh_ALT is usually _bin/osh -- the release binary.
+# It would be better to rename these osh-cpython and osh-ovm.  Have the concept
+# of a suffix?  Then we can have osh-byterun too.
+
+OTHER_OSH = ('osh_ALT', 'osh-byterun') 
+
+
 class ParseError(Exception):
   pass
 
@@ -357,7 +366,7 @@ def CreateAssertions(case, sh_label):
   status = False
 
   # So the assertion are exactly the same for osh and osh_ALT
-  case_sh = 'osh' if sh_label in ('osh_ALT', 'osh-byterun') else sh_label
+  case_sh = 'osh' if sh_label in OTHER_OSH else sh_label
 
   if case_sh in case:
     q = case[case_sh]['qualifier']
@@ -507,7 +516,7 @@ def RunCases(cases, case_predicate, shells, env, out):
       if cell_result == Result.FAIL:
         # Special logic: don't count osh_ALT beacuse its failures will be
         # counted in the delta.
-        if sh_label not in ('osh_ALT', 'osh-byterun'):
+        if sh_label not in OTHER_OSH:
           stats['num_failed'] += 1
 
         if sh_label == 'osh':
@@ -525,7 +534,7 @@ def RunCases(cases, case_predicate, shells, env, out):
       else:
         raise AssertionError
 
-      if sh_label in ('osh_ALT', 'osh-byterun'):
+      if sh_label in OTHER_OSH:
         osh_alt_result = result_row[-1]
         cpython_result = result_row[-2]
         if osh_alt_result != cpython_result:
@@ -879,8 +888,9 @@ def main(argv):
     name, _ = os.path.splitext(path)
     label = os.path.basename(name)
     if label == 'osh':
+      # change the second 'osh' to 'osh_ALT' so it's distinct
       if saw_osh:
-        label = 'osh_ALT'  # distinct label
+        label = 'osh_ALT'
       else:
         saw_osh = True
     shell_pairs.append((label, path))
