@@ -63,18 +63,45 @@ build-zsh() {
   popd
 }
 
-build-all() {
-  # bash/dash: ./configure; make
-  # mksh: sh Build.sh
-  # busybox: make defconfig (default config); make
+# bash/dash: ./configure; make
+# mksh: sh Build.sh
+# busybox: make defconfig (default config); make
 
-  # ZSH needs special builds
-  build-zsh
-
-  pushd $DIR
-
-  # TODO: Are they all different?
+build-bash() {
+  pushd $DIR/bash-4.3
+  ./configure
+  make
   popd
+}
+
+build-dash() {
+  pushd $DIR/dash-0.5.8
+  ./configure
+  make
+  popd
+}
+
+build-mksh() {
+  pushd $DIR/mksh-R52c
+  sh Build.sh
+  popd
+}
+
+build-busybox() {
+  pushd $DIR/busybox-1.22.0
+  make defconfig
+  make
+  popd
+}
+
+build-all() {
+  build-bash
+  build-dash
+  build-mksh
+  build-busybox
+
+  # ZSH is a bit special
+  build-zsh
 }
 
 copy-all() {
