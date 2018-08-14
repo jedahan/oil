@@ -459,6 +459,16 @@ def RunCases(cases, case_predicate, shells, env, out):
     e['SH'] = sh_path
     sh_env.append(e)
 
+  # Determine which one is osh-cpython, for comparison against other shells.
+  osh_cpython_index = -1
+  for i, (sh_label, _) in enumerate(shells):
+    if sh_label == 'osh':
+      osh_cpython_index = i
+      break
+  if osh_cpython_index == -1:
+    raise RuntimeError("Couldn't determine index of osh-cpython")
+
+  # Now run each case, and print a table.
   for i, case in enumerate(cases):
     line_num = case['line_num']
     desc = case['desc']
@@ -535,9 +545,9 @@ def RunCases(cases, case_predicate, shells, env, out):
         raise AssertionError
 
       if sh_label in OTHER_OSH:
-        osh_alt_result = result_row[-1]
-        cpython_result = result_row[-2]
-        if osh_alt_result != cpython_result:
+        other_result = result_row[shell_index]
+        cpython_result = result_row[osh_cpython_index]
+        if other_result != cpython_result:
           stats['osh_ALT_delta'] += 1
 
     out.WriteRow(i, line_num, result_row, desc)
