@@ -35,7 +35,7 @@ else
   readonly BUSYBOX_ASH=_tmp/shells/ash
 fi
 
-readonly OSH_PYTHON=${OSH_PYTHON:-bin/osh}
+readonly OSH_CPYTHON=${OSH_CPYTHON:-bin/osh}
 readonly OSH_OVM=${OSH_OVM:-_bin/osh}
 
 if test -e $OSH_OVM; then
@@ -43,9 +43,9 @@ if test -e $OSH_OVM; then
   # like /tmp?  /tmp/{oil.ovm,osh}.
 
   # HACK that relies on word splitting.  TODO: Use ${OSH[@]} everywhere
-  readonly OSH="$OSH_PYTHON $OSH_OVM"
+  readonly OSH="$OSH_CPYTHON $OSH_OVM"
 else
-  readonly OSH="$OSH_PYTHON"
+  readonly OSH="$OSH_CPYTHON"
 fi
 
 
