@@ -83,9 +83,18 @@ gen-types-asdl() {
 
 gen-osh-asdl() {
   local out=_devbuild/gen/osh_asdl.py
+
+  # BUG: MUST BE DONE ATOMICALLY ATOMIC; otherwise the Python interpreter can
+  # import an empty file!
+  local tmp=/tmp/foo
+
   local import='from osh.meta import OSH_TYPE_LOOKUP as TYPE_LOOKUP'
   PYTHONPATH=. osh/asdl_gen.py py \
-    osh/osh.asdl "$import" _devbuild/osh_asdl.pickle > $out
+    osh/osh.asdl "$import" _devbuild/osh_asdl.pickle > $tmp
+  
+  # ATOMIC
+  mv -v $tmp $out
+
   echo "Wrote $out"
 }
 
@@ -142,15 +151,38 @@ clean() {
 # No fastlex, because we don't want to require re2c installation.
 minimal() {
   mkdir -p _devbuild/gen
-  # so osh_help.py and osh_asdl.py are importable
+
+  rm -v _devbuild/gen/*
+
+  # So modules are importable.
   touch _devbuild/__init__.py  _devbuild/gen/__init__.py
 
   gen-help
 
   # BOOTSTRAP_LEVEL is a hack for avoiding circular dependencies.
   BOOTSTRAP_LEVEL=0 gen-types-asdl    # doesn't need Id
+
+  echo ---0---
+  ls -l _devbuild/gen
+  echo ---0---
+
+  #_OVM_RESOURCE_ROOT=. PYTHONPATH=. python -c 'from _devbuild.gen import types_asdl'
+  #_OVM_RESOURCE_ROOT=. PYTHONPATH=. python -c 'from osh import asdl_gen; print asdl_gen'
+  echo ---0.5---
+  ls -l _devbuild/gen
+  echo ---0.5---
+
   BOOTSTRAP_LEVEL=1 gen-osh-asdl      # needs Id, which needs types.asdl
+
+  echo ---1---
+  ls -l _devbuild/gen
+  echo ---1---
+
   BOOTSTRAP_LEVEL=2 gen-runtime-asdl  # ditto
+
+  echo ---2---
+  ls -l _devbuild/gen
+  echo ---2---
 
   pylibc
 }

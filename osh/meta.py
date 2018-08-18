@@ -11,15 +11,22 @@ Usage:
   from osh.meta import Id, Kind, ast, ID_SPEC
 """
 
+import os
+
 from asdl import asdl_ as asdl
-
-# TODO: Remove this dependency!
-from asdl import front_end
-
-from asdl import py_meta
-
 from core import id_kind
-from core import util
+
+
+_BOOTSTRAP_LEVEL = int(os.getenv('BOOTSTRAP_LEVEL', '3'))
+
+
+# TODO: Get rid of this hack.
+def _AssignTypes(src_module, dest_module):
+  """For generated code."""
+  for name in dir(src_module):
+    if not name.startswith('__'):
+      v = getattr(src_module, name)
+      setattr(dest_module, name, v)
 
 
 class Id(object):
@@ -82,17 +89,8 @@ def IdInstance(i):
 #_schema_ast, _type_lookup = front_end.LoadSchema(f, {})  # no app_types
 #
 types = _AsdlModule()
-#if 0:
-#  py_meta.MakeTypes(_schema_ast, types, _type_lookup)
-#else:
-  # Exported for the generated code to use
-  #TYPES_TYPE_LOOKUP = _type_lookup
-
-# Get the types from elsewhere
 from _devbuild.gen import types_asdl
-py_meta.AssignTypes(types_asdl, types)
-
-#f.close()
+_AssignTypes(types_asdl, types)
 
 
 # Id -> bool_arg_type_e
@@ -124,55 +122,23 @@ id_kind.SetupTestBuiltin(Id, Kind, ID_SPEC,
 _kind_sizes = ID_SPEC.kind_sizes
 
 
-APP_TYPES = {'id': asdl.UserType(Id)}
-
 #
 # Instantiate osh/osh.asdl
 #
 
-#f = util.GetResourceLoader().open('osh/osh.asdl')
-#_schema_ast, _type_lookup = front_end.LoadSchema(f, APP_TYPES)
-
-# By default, everything is loaded.
-# HACK so we can import Id while generating code.  If we fold Id into ASDL
-# proper, then we won't need this.
-import os
-_BOOTSTRAP_LEVEL = int(os.getenv('BOOTSTRAP_LEVEL', '3'))
-
-if _BOOTSTRAP_LEVEL >= 1:
+if _BOOTSTRAP_LEVEL > 1:
   ast = _AsdlModule()
-#if 0:
-#  py_meta.MakeTypes(_schema_ast, ast, _type_lookup)
-#else:
-#  # Exported for the generated code to use
-#  OSH_TYPE_LOOKUP = _type_lookup
-
-# Get the types from elsewhere
   from _devbuild.gen import osh_asdl
-  py_meta.AssignTypes(osh_asdl, ast)
-  #print('OSH_ASDL %s' % dir(osh_asdl))
-
-#f.close()
+  _AssignTypes(osh_asdl, ast)
 
 #
 # Instantiate core/runtime.asdl
 #
 
-#f = util.GetResourceLoader().open('core/runtime.asdl')
-#_schema_ast, _type_lookup = front_end.LoadSchema(f, APP_TYPES)
-
-runtime = _AsdlModule()
-#if 0:
-#  py_meta.MakeTypes(_schema_ast, runtime, _type_lookup)
-#else:
-  # Exported for the generated code to use
-#  RUNTIME_TYPE_LOOKUP = _type_lookup
-
-if _BOOTSTRAP_LEVEL >= 2:
+if _BOOTSTRAP_LEVEL > 2:
+  runtime = _AsdlModule()
   from _devbuild.gen import runtime_asdl
-  py_meta.AssignTypes(runtime_asdl, runtime)
-
-#f.close()
+  _AssignTypes(runtime_asdl, runtime)
 
 #
 # Redirect Tables associated with IDs
