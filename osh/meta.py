@@ -78,21 +78,21 @@ def IdInstance(i):
 # Instantiate osh/types.asdl
 #
 
-f = util.GetResourceLoader().open('osh/types.asdl')
-_schema_ast, _type_lookup = front_end.LoadSchema(f, {})  # no app_types
-
+#f = util.GetResourceLoader().open('osh/types.asdl')
+#_schema_ast, _type_lookup = front_end.LoadSchema(f, {})  # no app_types
+#
 types = _AsdlModule()
-if 0:
-  py_meta.MakeTypes(_schema_ast, types, _type_lookup)
-else:
+#if 0:
+#  py_meta.MakeTypes(_schema_ast, types, _type_lookup)
+#else:
   # Exported for the generated code to use
-  TYPES_TYPE_LOOKUP = _type_lookup
+  #TYPES_TYPE_LOOKUP = _type_lookup
 
-  # Get the types from elsewhere
-  from _devbuild.gen import types_asdl
-  py_meta.AssignTypes(types_asdl, types)
+# Get the types from elsewhere
+from _devbuild.gen import types_asdl
+py_meta.AssignTypes(types_asdl, types)
 
-f.close()
+#f.close()
 
 
 # Id -> bool_arg_type_e
@@ -113,17 +113,8 @@ ID_SPEC = id_kind.IdSpec(Id, Kind,
                          BOOL_ARG_TYPES)
 
 id_kind.AddKinds(ID_SPEC)
-
-# Weird dependency:, we need types.bool_arg_type_e?  Why?  That depends on
-# types.asdl.
-# We don't need it for Id, but we need it for BOOL_ARG_TYPES
-
-# Circular dependency:
-# - generating osh.asdl depends on Id
-# - generating Id depends on types.asdl
-# It's not quite circular, maybe we can hack it.
-
 id_kind.AddBoolKinds(ID_SPEC, Id, types.bool_arg_type_e)  # must come second
+# NOTE: Dependency on the types module here.
 id_kind.SetupTestBuiltin(Id, Kind, ID_SPEC,
                          TEST_UNARY_LOOKUP, TEST_BINARY_LOOKUP,
                          TEST_OTHER_LOOKUP,
@@ -139,41 +130,49 @@ APP_TYPES = {'id': asdl.UserType(Id)}
 # Instantiate osh/osh.asdl
 #
 
-f = util.GetResourceLoader().open('osh/osh.asdl')
-_schema_ast, _type_lookup = front_end.LoadSchema(f, APP_TYPES)
+#f = util.GetResourceLoader().open('osh/osh.asdl')
+#_schema_ast, _type_lookup = front_end.LoadSchema(f, APP_TYPES)
 
-ast = _AsdlModule()
-if 0:
-  py_meta.MakeTypes(_schema_ast, ast, _type_lookup)
-else:
-  # Exported for the generated code to use
-  OSH_TYPE_LOOKUP = _type_lookup
+# By default, everything is loaded.
+# HACK so we can import Id while generating code.  If we fold Id into ASDL
+# proper, then we won't need this.
+import os
+_BOOTSTRAP_LEVEL = int(os.getenv('BOOTSTRAP_LEVEL', '3'))
 
-  # Get the types from elsewhere
+if _BOOTSTRAP_LEVEL >= 1:
+  ast = _AsdlModule()
+#if 0:
+#  py_meta.MakeTypes(_schema_ast, ast, _type_lookup)
+#else:
+#  # Exported for the generated code to use
+#  OSH_TYPE_LOOKUP = _type_lookup
+
+# Get the types from elsewhere
   from _devbuild.gen import osh_asdl
   py_meta.AssignTypes(osh_asdl, ast)
+  #print('OSH_ASDL %s' % dir(osh_asdl))
 
-f.close()
+#f.close()
 
 #
 # Instantiate core/runtime.asdl
 #
 
-f = util.GetResourceLoader().open('core/runtime.asdl')
-_schema_ast, _type_lookup = front_end.LoadSchema(f, APP_TYPES)
+#f = util.GetResourceLoader().open('core/runtime.asdl')
+#_schema_ast, _type_lookup = front_end.LoadSchema(f, APP_TYPES)
 
 runtime = _AsdlModule()
-if 0:
-  py_meta.MakeTypes(_schema_ast, runtime, _type_lookup)
-else:
+#if 0:
+#  py_meta.MakeTypes(_schema_ast, runtime, _type_lookup)
+#else:
   # Exported for the generated code to use
-  RUNTIME_TYPE_LOOKUP = _type_lookup
+#  RUNTIME_TYPE_LOOKUP = _type_lookup
 
-  # Get the types from elsewhere
+if _BOOTSTRAP_LEVEL >= 2:
   from _devbuild.gen import runtime_asdl
   py_meta.AssignTypes(runtime_asdl, runtime)
 
-f.close()
+#f.close()
 
 #
 # Redirect Tables associated with IDs

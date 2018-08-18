@@ -58,7 +58,6 @@ def main(argv):
     f.write("""\
 import pickle
 
-
 from asdl import asdl_ as asdl
 from asdl import const  # For const.NO_INTEGER
 from asdl import py_meta

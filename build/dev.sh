@@ -146,9 +146,12 @@ minimal() {
   touch _devbuild/__init__.py  _devbuild/gen/__init__.py
 
   gen-help
-  gen-types-asdl
-  gen-osh-asdl
-  gen-runtime-asdl
+
+  # BOOTSTRAP_LEVEL is a hack for avoiding circular dependencies.
+  BOOTSTRAP_LEVEL=0 gen-types-asdl    # doesn't need Id
+  BOOTSTRAP_LEVEL=1 gen-osh-asdl      # needs Id, which needs types.asdl
+  BOOTSTRAP_LEVEL=2 gen-runtime-asdl  # ditto
+
   pylibc
 }
 
