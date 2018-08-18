@@ -75,9 +75,8 @@ gen-help() {
 # TYPE_LOOKUP = pickle.load(f)
 gen-types-asdl() {
   local out=_devbuild/gen/types_asdl.py
-  local import='from osh.meta import TYPES_TYPE_LOOKUP as TYPE_LOOKUP'
   PYTHONPATH=. osh/asdl_gen.py py \
-    osh/types.asdl "$import" _devbuild/types_asdl.pickle > $out
+    osh/types.asdl _devbuild/types_asdl.pickle > $out
   echo "Wrote $out"
 }
 
@@ -88,9 +87,8 @@ gen-osh-asdl() {
   # import an empty file!
   local tmp=/tmp/foo
 
-  local import='from osh.meta import OSH_TYPE_LOOKUP as TYPE_LOOKUP'
   PYTHONPATH=. osh/asdl_gen.py py \
-    osh/osh.asdl "$import" _devbuild/osh_asdl.pickle > $tmp
+    osh/osh.asdl _devbuild/osh_asdl.pickle > $tmp
   
   # ATOMIC
   mv -v $tmp $out
@@ -100,9 +98,8 @@ gen-osh-asdl() {
 
 gen-runtime-asdl() {
   local out=_devbuild/gen/runtime_asdl.py
-  local import='from osh.meta import RUNTIME_TYPE_LOOKUP as TYPE_LOOKUP'
   PYTHONPATH=. osh/asdl_gen.py py \
-    core/runtime.asdl "$import" _devbuild/runtime_asdl.pickle > $out
+    core/runtime.asdl _devbuild/runtime_asdl.pickle > $out
   echo "Wrote $out"
 }
 

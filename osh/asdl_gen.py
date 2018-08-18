@@ -41,14 +41,7 @@ def main(argv):
     v.VisitModule(schema_ast)
 
   elif action == 'py':  # Generate Python code so we don't depend on ASDL schemas
-    # TODO: Remove import and require pickle path!
-
-    type_lookup_import = argv[3]
-
-    try:
-      pickle_out_path = argv[4]
-    except IndexError:
-      pickle_out_path = None
+    pickle_out_path = argv[3]
 
     with open(schema_path) as f:
       schema_ast, type_lookup = front_end.LoadSchema(f, app_types)
