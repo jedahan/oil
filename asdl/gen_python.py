@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 """
 gen_python.py
 
@@ -128,10 +129,15 @@ from asdl import py_meta
   v = GenClassesVisitor(f)
   v.VisitModule(module)
 
+  # TODO: Also generate reflection data.  Should it be a tiny stack bytecode
+  # with BUILD_CLASS and setattr() ?  Hm.  Maybe do it like Pickle.
+  # Or honestly oheap can express a graph.  But it has a different API.  You
+  # can write a Python API for it, but it would need a code generator.
+
 
 if __name__ == '__main__':
   try:
     main(sys.argv)
   except RuntimeError as e:
-    print >>sys.stderr, 'FATAL: %s' % e
+    print('FATAL: %s' % e, file=sys.stderr)
     sys.exit(1)
