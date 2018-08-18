@@ -26,6 +26,7 @@ def main(argv):
   except IndexError:
     raise RuntimeError('Schema path required')
 
+  # To avoid circular dependencies, don't load Id for types.asdl.
   if os.path.basename(schema_path) == 'types.asdl':
     app_types = {}
   else:
@@ -34,10 +35,10 @@ def main(argv):
 
   if action == 'c':  # Generate C code for the lexer
     with open(schema_path) as f:
-      asdl_module, _ = front_end.LoadSchema(f, app_types)
+      schema_ast, _ = front_end.LoadSchema(f, app_types)
 
     v = gen_cpp.CEnumVisitor(sys.stdout)
-    v.VisitModule(asdl_module)
+    v.VisitModule(schema_ast)
 
   elif action == 'py':  # Generate Python code so we don't depend on ASDL schemas
     type_lookup_import = argv[3]
@@ -45,11 +46,9 @@ def main(argv):
       pickle_out_path = argv[4]
     except IndexError:
       pickle_out_path = None
-    pickle_out_path = None
 
-    p = front_end.ASDLParser()
-    with open(schema_path) as input_f:
-      module = p.parse(input_f)
+    with open(schema_path) as f:
+      schema_ast, type_lookup = front_end.LoadSchema(f, app_types)
 
     f = sys.stdout
 
@@ -61,42 +60,16 @@ from asdl import py_meta
 """ % type_lookup_import)
 
     v = gen_python.GenClassesVisitor(f)
-    v.VisitModule(module)
+    v.VisitModule(schema_ast)
 
     if pickle_out_path:
-      import pickle
-      from osh.meta import Id
-      app_types = {'id': asdl.UserType(Id)}
-      with open(schema_path) as input_f:
-        module, type_lookup = front_end.LoadSchema(input_f, app_types)
-
+      # Pickle version 2 is better.  (Pickle version 0 uses
+      # s.decode('string-escape')! )
+      # In version 2, now I have 16 opcodes + STOP.
       with open(pickle_out_path, 'w') as f:
         pickle.dump(type_lookup.runtime_type_lookup, f, protocol=2)
       from core.util import log
       log('Wrote %s', pickle_out_path)
-
-
-    # TODO: Also generate reflection data.  Should it be a tiny stack bytecode
-    # with BUILD_CLASS and setattr() ?  Hm.  Maybe do it like Pickle.
-    # Or honestly oheap can express a graph.  But it has a different API.  You
-    # can write a Python API for it, but it would need a code generator.
-
-    # Easier solution: _RuntimeType has a 'seen' bit that starts out false.
-    # Then
-    # We want to serialize a dict of {string: _RuntimeType}, but it also has
-    # internal fields that are lists of tuples, and the tuples point to more
-    # instances.
-    # Maybe write an unpickler in Python that only supports the opcodes we need?
-
-    # There are 13 instructions plus STOP!  Yeah this is a fun little problem.
-    # It's a data serialization VM.
-    # Unpickler is squite small.
-
-    # Uh it uses s.decode('string-escape')?
-    # why not BINSTRING?
-    #
-    # Oh that's version 2.
-    # In version 2, now I have 16 opcodes + STOP.
 
   else:
     raise RuntimeError('Invalid action %r' % action)
