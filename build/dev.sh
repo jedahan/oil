@@ -149,8 +149,6 @@ clean() {
 minimal() {
   mkdir -p _devbuild/gen
 
-  rm -v _devbuild/gen/*
-
   # So modules are importable.
   touch _devbuild/__init__.py  _devbuild/gen/__init__.py
 
@@ -158,28 +156,8 @@ minimal() {
 
   # BOOTSTRAP_LEVEL is a hack for avoiding circular dependencies.
   BOOTSTRAP_LEVEL=0 gen-types-asdl    # doesn't need Id
-
-  echo ---0---
-  ls -l _devbuild/gen
-  echo ---0---
-
-  #_OVM_RESOURCE_ROOT=. PYTHONPATH=. python -c 'from _devbuild.gen import types_asdl'
-  #_OVM_RESOURCE_ROOT=. PYTHONPATH=. python -c 'from osh import asdl_gen; print asdl_gen'
-  echo ---0.5---
-  ls -l _devbuild/gen
-  echo ---0.5---
-
   BOOTSTRAP_LEVEL=1 gen-osh-asdl      # needs Id, which needs types.asdl
-
-  echo ---1---
-  ls -l _devbuild/gen
-  echo ---1---
-
   BOOTSTRAP_LEVEL=2 gen-runtime-asdl  # ditto
-
-  echo ---2---
-  ls -l _devbuild/gen
-  echo ---2---
 
   pylibc
 }
