@@ -105,7 +105,7 @@ TEST_OTHER_LOOKUP = {}
 
 
 #
-# Instantiate the spec
+# Add attributes to Id and Kind
 #
 
 ID_SPEC = id_kind.IdSpec(Id, Kind,
@@ -113,6 +113,16 @@ ID_SPEC = id_kind.IdSpec(Id, Kind,
                          BOOL_ARG_TYPES)
 
 id_kind.AddKinds(ID_SPEC)
+
+# Weird dependency:, we need types.bool_arg_type_e?  Why?  That depends on
+# types.asdl.
+# We don't need it for Id, but we need it for BOOL_ARG_TYPES
+
+# Circular dependency:
+# - generating osh.asdl depends on Id
+# - generating Id depends on types.asdl
+# It's not quite circular, maybe we can hack it.
+
 id_kind.AddBoolKinds(ID_SPEC, Id, types.bool_arg_type_e)  # must come second
 id_kind.SetupTestBuiltin(Id, Kind, ID_SPEC,
                          TEST_UNARY_LOOKUP, TEST_BINARY_LOOKUP,

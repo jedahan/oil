@@ -68,24 +68,32 @@ gen-help() {
   build/doc.sh osh-quick-ref
 }
 
+# TODO:
+# import pickle
+# The import should be replaced with 
+# f = util.GetResourceLoader().open('_devbuild/osh_asdl.pickle')
+# TYPE_LOOKUP = pickle.load(f)
 gen-types-asdl() {
   local out=_devbuild/gen/types_asdl.py
   local import='from osh.meta import TYPES_TYPE_LOOKUP as TYPE_LOOKUP'
-  PYTHONPATH=. asdl/gen_python.py osh/types.asdl "$import" > $out
+  PYTHONPATH=. osh/ast_gen.py py \
+    osh/types.asdl "$import" _devbuild/types_asdl.pickle > $out
   echo "Wrote $out"
 }
 
 gen-osh-asdl() {
   local out=_devbuild/gen/osh_asdl.py
   local import='from osh.meta import OSH_TYPE_LOOKUP as TYPE_LOOKUP'
-  PYTHONPATH=. asdl/gen_python.py osh/osh.asdl "$import" > $out
+  PYTHONPATH=. osh/ast_gen.py py \
+    osh/osh.asdl "$import" _devbuild/osh_asdl.pickle > $out
   echo "Wrote $out"
 }
 
 gen-runtime-asdl() {
   local out=_devbuild/gen/runtime_asdl.py
   local import='from osh.meta import RUNTIME_TYPE_LOOKUP as TYPE_LOOKUP'
-  PYTHONPATH=. asdl/gen_python.py core/runtime.asdl "$import" > $out
+  PYTHONPATH=. osh/ast_gen.py py \
+    core/runtime.asdl "$import" _devbuild/runtime_asdl.pickle > $out
   echo "Wrote $out"
 }
 

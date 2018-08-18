@@ -888,6 +888,7 @@ class Unpickler:
 
     def load_proto(self):
         proto = ord(self.read(1))
+
         if not 0 <= proto <= 2:
             raise ValueError, "unsupported pickle protocol: %d" % proto
     dispatch[PROTO] = load_proto

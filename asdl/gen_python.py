@@ -106,38 +106,3 @@ class GenClassesVisitor(visitor.AsdlVisitor):
 
   def EmitFooter(self):
     pass
-
-
-def main(argv):
-
-  schema_path = argv[1]
-  type_lookup_import = argv[2]
-
-  p = front_end.ASDLParser()
-  with open(schema_path) as input_f:
-    module = p.parse(input_f)
-
-  f = sys.stdout
-
-  f.write("""\
-from asdl import const  # For const.NO_INTEGER
-from asdl import py_meta
-%s
-
-""" % type_lookup_import)
-
-  v = GenClassesVisitor(f)
-  v.VisitModule(module)
-
-  # TODO: Also generate reflection data.  Should it be a tiny stack bytecode
-  # with BUILD_CLASS and setattr() ?  Hm.  Maybe do it like Pickle.
-  # Or honestly oheap can express a graph.  But it has a different API.  You
-  # can write a Python API for it, but it would need a code generator.
-
-
-if __name__ == '__main__':
-  try:
-    main(sys.argv)
-  except RuntimeError as e:
-    print('FATAL: %s' % e, file=sys.stderr)
-    sys.exit(1)
