@@ -112,7 +112,8 @@ ID_SPEC = id_kind.IdSpec(Id, Kind,
 
 id_kind.AddKinds(ID_SPEC)
 id_kind.AddBoolKinds(ID_SPEC, Id, types.bool_arg_type_e)  # must come second
-# NOTE: Dependency on the types module here.
+# NOTE: Dependency on the types module here.  This is the root cause of the
+# _BOOTSTRAP_LEVEL hack.
 id_kind.SetupTestBuiltin(Id, Kind, ID_SPEC,
                          TEST_UNARY_LOOKUP, TEST_BINARY_LOOKUP,
                          TEST_OTHER_LOOKUP,

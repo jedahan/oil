@@ -68,39 +68,34 @@ gen-help() {
   build/doc.sh osh-quick-ref
 }
 
-# TODO:
-# import pickle
-# The import should be replaced with 
-# f = util.GetResourceLoader().open('_devbuild/osh_asdl.pickle')
-# TYPE_LOOKUP = pickle.load(f)
-gen-types-asdl() {
-  local out=_devbuild/gen/types_asdl.py
-  PYTHONPATH=. osh/asdl_gen.py py \
-    osh/types.asdl _devbuild/types_asdl.pickle > $out
-  echo "Wrote $out"
-}
+# Helper
+gen-asdl-py-pickle() {
+  local asdl_path=$1  # e.g. osh/osh.asdl
 
-gen-osh-asdl() {
-  local out=_devbuild/gen/osh_asdl.py
+  local name=$(basename $asdl_path .asdl)
 
+  local tmp=_tmp/${name}_asdl.py
+  local out=_devbuild/gen/${name}_asdl.py
+
+  PYTHONPATH=. osh/asdl_gen.py py $asdl_path _devbuild/${name}_asdl.pickle > $tmp
+  
   # BUG: MUST BE DONE ATOMICALLY ATOMIC; otherwise the Python interpreter can
   # import an empty file!
-  local tmp=/tmp/foo
-
-  PYTHONPATH=. osh/asdl_gen.py py \
-    osh/osh.asdl _devbuild/osh_asdl.pickle > $tmp
-  
-  # ATOMIC
   mv -v $tmp $out
 
   echo "Wrote $out"
 }
 
+gen-types-asdl() {
+  gen-asdl-py-pickle osh/types.asdl
+}
+
+gen-osh-asdl() {
+  gen-asdl-py-pickle osh/osh.asdl
+}
+
 gen-runtime-asdl() {
-  local out=_devbuild/gen/runtime_asdl.py
-  PYTHONPATH=. osh/asdl_gen.py py \
-    core/runtime.asdl _devbuild/runtime_asdl.pickle > $out
-  echo "Wrote $out"
+  gen-asdl-py-pickle core/runtime.asdl
 }
 
 # TODO: should fastlex.c be part of the dev build?  It means you need re2c
@@ -148,6 +143,8 @@ clean() {
 # No fastlex, because we don't want to require re2c installation.
 minimal() {
   mkdir -p _devbuild/gen
+
+  rm -v _devbuild/gen/*
 
   # So modules are importable.
   touch _devbuild/__init__.py  _devbuild/gen/__init__.py
