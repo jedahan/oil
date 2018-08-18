@@ -41,7 +41,10 @@ def main(argv):
     v.VisitModule(schema_ast)
 
   elif action == 'py':  # Generate Python code so we don't depend on ASDL schemas
+    # TODO: Remove import and require pickle path!
+
     type_lookup_import = argv[3]
+
     try:
       pickle_out_path = argv[4]
     except IndexError:
@@ -53,11 +56,21 @@ def main(argv):
     f = sys.stdout
 
     f.write("""\
+import pickle
+
+
+from asdl import asdl_ as asdl
 from asdl import const  # For const.NO_INTEGER
 from asdl import py_meta
-%s
 
-""" % type_lookup_import)
+from core import util
+
+f = util.GetResourceLoader().open('%s')
+type_lookup = pickle.load(f)
+TYPE_LOOKUP = asdl.TypeLookup(type_lookup)
+f.close()
+
+""" % pickle_out_path)
 
     v = gen_python.GenClassesVisitor(f)
     v.VisitModule(schema_ast)
