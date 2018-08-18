@@ -85,9 +85,6 @@ def IdInstance(i):
 # Instantiate osh/types.asdl
 #
 
-#f = util.GetResourceLoader().open('osh/types.asdl')
-#_schema_ast, _type_lookup = front_end.LoadSchema(f, {})  # no app_types
-#
 types = _AsdlModule()
 from _devbuild.gen import types_asdl
 _AssignTypes(types_asdl, types)
