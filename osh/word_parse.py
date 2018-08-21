@@ -825,8 +825,8 @@ class WordParser(object):
       return None
 
     if self.token_type != Id.Arith_RBracket:
-      self.AddErrorContext("Expected ], got %s", self.cur_token)
-      return None
+      p_die('Expected ], got %r', self.cur_token.val, token=self.cur_token)
+
     right_span_id = self.cur_token.span_id
 
     node = ast.ArithSubPart(anode)

@@ -65,14 +65,6 @@ word-parse() {
 
   _error-case 'echo ${#a.'
 
-  # $(( ))
-  _error-case 'echo $(( 1 + 2 ;'
-  _error-case 'echo $(( 1 + 2 );'
-
-  # (( ))
-  _error-case '(( 1 + 2 /'
-  _error-case '(( 1 + 2 )/'
-
   # for (( ))
   _error-case 'for (( i = 0; i < 10; i++ ;'
   # Hm not sure about this
@@ -82,6 +74,27 @@ word-parse() {
 
   # Array literal with invalid TokenWord.
   _error-case 'a=(1 & 2)'
+}
+
+arith() {
+  set +o errexit
+
+  # $(( ))
+  _error-case 'echo $(( 1 + 2 ;'
+  _error-case 'echo $(( 1 + 2 );'
+
+  # Non-standard arith sub $[1 + 2]
+  _error-case 'echo $[ 1 + 2 ;'
+
+  # What's going on here?   No location info?
+  _error-case 'echo $[ 1 + 2 /'
+
+  _error-case 'echo $[ 1 + 2 / 3'
+  return
+
+  # (( ))
+  _error-case '(( 1 + 2 /'
+  _error-case '(( 1 + 2 )/'
 }
 
 quoted-strings() {
@@ -112,9 +125,9 @@ cases-in-strings() {
   _error-case 'echo $( echo > >>  )'
   _error-case 'echo ${'
 
-  patsub
   word-parse
-
+  patsub
+  arith
   quoted-strings
 }
 
