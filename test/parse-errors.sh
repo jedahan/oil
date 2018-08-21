@@ -83,6 +83,8 @@ arith-context() {
   # $(( ))
   _error-case 'echo $(( 1 + 2 ;'
   _error-case 'echo $(( 1 + 2 );'
+  _error-case 'echo $(( '
+  _error-case 'echo $(( 1'
 
   # Non-standard arith sub $[1 + 2]
   _error-case 'echo $[ 1 + 2 ;'
@@ -91,10 +93,13 @@ arith-context() {
   _error-case 'echo $[ 1 + 2 /'
 
   _error-case 'echo $[ 1 + 2 / 3'
+  _error-case 'echo $['
 
   # (( ))
   _error-case '(( 1 + 2 /'
   _error-case '(( 1 + 2 )/'
+  _error-case '(( 1'
+  _error-case '(('
 }
 
 arith-expr() {
@@ -129,6 +134,9 @@ bool-expr() {
   _error-case '[[ == ]]'
   _error-case '[[ ) ]]'
   _error-case '[[ ( ]]'
+
+  _error-case '[[ ;;; ]]'
+  _error-case '[['
 }
 
 quoted-strings() {

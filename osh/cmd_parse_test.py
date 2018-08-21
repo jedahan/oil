@@ -38,7 +38,6 @@ def _assertParseMethod(test, code_str, method, expect_success=True):
     if not expect_success:
       test.fail('Expected %r to fail ' % code_str)
   else:
-    # TODO: Could copy PrettyPrintError from pysh.py
     err = c_parser.Error()
     print(err)
     ui.PrintErrorStack(err, arena, sys.stdout)
