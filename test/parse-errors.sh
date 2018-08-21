@@ -96,6 +96,19 @@ arith-context() {
   _error-case '(( 1 + 2 )/'
 }
 
+arith-expr() {
+  set +o errexit
+
+  # BUG: the token is off here
+  _error-case '$(( 1 + + ))'
+
+  # BUG: not a great error either
+  _error-case '$(( 1 2 ))'
+
+  # Triggered a crash!
+  _error-case '$(( - ; ))'
+}
+
 quoted-strings() {
   set +o errexit
 
@@ -126,8 +139,10 @@ cases-in-strings() {
 
   word-parse
   patsub
-  arith-context
   quoted-strings
+
+  arith-context
+  arith-expr
 }
 
 # Cases in their own file
