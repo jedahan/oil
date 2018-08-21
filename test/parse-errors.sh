@@ -109,6 +109,27 @@ arith-expr() {
   _error-case '$(( - ; ))'
 }
 
+bool-expr() {
+  set +o errexit
+
+  # Extra word
+  _error-case '[[ a b ]]'
+  _error-case '[[ a "a"$(echo hi)"b" ]]'
+
+  # Wrong error message
+  _error-case '[[ a == ]]'
+
+  # Invalid regex
+  _error-case '[[ $var =~ * ]]'
+
+  # Unbalanced parens
+  _error-case '[[ ( 1 == 2 - ]]'
+
+  _error-case '[[ == ]]'
+  _error-case '[[ ) ]]'
+  _error-case '[[ ( ]]'
+}
+
 quoted-strings() {
   set +o errexit
 
@@ -143,6 +164,8 @@ cases-in-strings() {
 
   arith-context
   arith-expr
+
+  bool-expr
 }
 
 # Cases in their own file
