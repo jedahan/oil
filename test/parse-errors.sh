@@ -74,6 +74,7 @@ word-parse() {
 
   # Array literal with invalid TokenWord.
   _error-case 'a=(1 & 2)'
+  _error-case 'a= (1 2)'
 }
 
 arith-context() {
