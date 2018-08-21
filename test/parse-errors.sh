@@ -76,7 +76,7 @@ word-parse() {
   _error-case 'a=(1 & 2)'
 }
 
-arith() {
+arith-context() {
   set +o errexit
 
   # $(( ))
@@ -90,7 +90,6 @@ arith() {
   _error-case 'echo $[ 1 + 2 /'
 
   _error-case 'echo $[ 1 + 2 / 3'
-  return
 
   # (( ))
   _error-case '(( 1 + 2 /'
@@ -127,7 +126,7 @@ cases-in-strings() {
 
   word-parse
   patsub
-  arith
+  arith-context
   quoted-strings
 }
 
